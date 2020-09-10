@@ -6,8 +6,8 @@
 	 //interrupt handler
 	 void EXTI0_IRQHandler(void)
 	 {
-		 __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_0);
-		 HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+		 __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_0); //clear this IRQ's_
+		 HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);//    _pending status
 	 }
 
 int main()
