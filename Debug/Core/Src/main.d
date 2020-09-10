@@ -21,7 +21,9 @@ Core/Src/main.o: ../Core/Src/main.c \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_flash_ex.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_flash_ramfunc.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr.h \
- ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr_ex.h
+ ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr_ex.h \
+ ../Core/Inc/gpio.h ../Core/Inc/main.h \
+ ../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l100xc.h
 
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal.h:
 
@@ -68,3 +70,9 @@ Core/Src/main.o: ../Core/Src/main.c \
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr.h:
 
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr_ex.h:
+
+../Core/Inc/gpio.h:
+
+../Core/Inc/main.h:
+
+../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l100xc.h:
