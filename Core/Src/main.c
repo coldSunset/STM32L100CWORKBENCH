@@ -3,6 +3,8 @@
 #include "gpio.h"
 #include "stm32l100xc.h"
 
+int flag_toggle =0;
+
 	 //interrupt handler
 	 void EXTI0_IRQHandler(void)
 	 {
@@ -15,7 +17,17 @@
 	 {
 		 if(GPIO_Pin == GPIO_PIN_0)
 		 {
-			 HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+			 flag_toggle = !flag_toggle;
+			 while(flag_toggle)
+			 {
+				 HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+				 for(int i =0 ; i < 1000000 ; i++)
+				 {
+
+
+				 }
+			 }
+			// HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
 		 }
 	 }
 
