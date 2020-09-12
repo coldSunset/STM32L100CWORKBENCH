@@ -32,6 +32,7 @@
 #define WELCOME_MSG "Welcome to the STMDISCO management console\r\n"
 #define MAIN_MENU   "Select the option you are interested in:\r\n\t1. Toggle LD2 LED\r\n\t2. Read USER BUTTON status\r\n\t3. Clear screen and print this message "
 #define PROMPT "\r\n> "
+#define TEST "Hello"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -61,6 +62,7 @@ void SystemClock_Config(void);
 void printWelcomeMessage(void);
 uint8_t processUserInput(uint8_t opt);
 uint8_t readUserInput(void);
+void printTestMessage(void);
 
 /* USER CODE END PFP */
 
@@ -107,6 +109,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	   //printTestMessage();
     /* USER CODE END WHILE */
 		opt = readUserInput();
 		processUserInput(opt);
@@ -163,6 +166,12 @@ void printWelcomeMessage(void) {
 	HAL_UART_Transmit(&huart1, (uint8_t*)"\033[2J", strlen("\033[2J"), HAL_MAX_DELAY);
 	HAL_UART_Transmit(&huart1, (uint8_t*)WELCOME_MSG, strlen(WELCOME_MSG), HAL_MAX_DELAY);
 	HAL_UART_Transmit(&huart1, (uint8_t*)MAIN_MENU, strlen(MAIN_MENU), HAL_MAX_DELAY);
+}
+
+void printTestMessage(void) {
+	HAL_UART_Transmit(&huart1, (uint8_t*)"\033[0;0H", strlen("\033[0;0H"), HAL_MAX_DELAY);
+	HAL_UART_Transmit(&huart1, (uint8_t*)"\033[2J", strlen("\033[2J"), HAL_MAX_DELAY);
+	HAL_UART_Transmit(&huart1, (uint8_t*)TEST, strlen(TEST), HAL_MAX_DELAY);
 }
 
 uint8_t readUserInput(void) {
