@@ -4,4 +4,4 @@ main.c:164:6:printWelcomeMessage	8	static
 main.c:171:6:printTestMessage	8	static
 main.c:177:9:readUserInput	16	static
 main.c:186:9:processUserInput	48	static
-main.c:215:6:Error_Handler	4	static
+main.c:216:6:Error_Handler	4	static

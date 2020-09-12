@@ -194,10 +194,11 @@ uint8_t processUserInput(uint8_t opt) {
 
 	switch(opt) {
 	case 1:
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
 		break;
 	case 2:
-		sprintf(msg, "\r\nUSER BUTTON status: %s", HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_RESET ? "PRESSED" : "RELEASED");
+		sprintf(msg, "\r\nUSER BUTTON status: %s", HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == GPIO_PIN_RESET ? "PRESSED" : "RELEASED");
 		HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 		break;
 	case 3:
