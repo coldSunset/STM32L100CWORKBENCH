@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #define WELCOME_MSG "Welcome to the STMDISCO management console\r\n"
-#define MAIN_MENU   "Select the option you are interested in:\r\n\t1. Toggle LD2 LED\r\n\t2. Read USER BUTTON status\r\n\t3. Clear screen and print this message "
+#define MAIN_MENU   "Select the option you are interested in:\r\n\t1. Toggle LD3 and LD4 LED\r\n\t2. Read USER BUTTON status\r\n\t3. Clear screen and print this message "
 #define PROMPT "\r\n> "
 #define TEST "Hello"
 /* USER CODE END Includes */
@@ -198,7 +198,7 @@ uint8_t processUserInput(uint8_t opt) {
 		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
 		break;
 	case 2:
-		sprintf(msg, "\r\nUSER BUTTON status: %s", HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == GPIO_PIN_RESET ? "PRESSED" : "RELEASED");
+		sprintf(msg, "\r\nUSER BUTTON status: %s", HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET ? "RELEASED" : "PRESSED");
 		HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 		break;
 	case 3:

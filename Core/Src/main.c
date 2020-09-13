@@ -22,7 +22,7 @@
 #include "main.h"
 #include "usart.h"
 #include "gpio.h"
-
+#include "ringbuffer.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -52,7 +52,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-UART_HandleTypeDef huart1;
+__IO ITStatus UartReady = SET;
+char readBuf[1];
+RingBuffer txBuf;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -63,7 +65,7 @@ void printWelcomeMessage(void);
 uint8_t processUserInput(uint8_t opt);
 uint8_t readUserInput(void);
 void printTestMessage(void);
-
+uint8_t UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t len);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -87,7 +89,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  RingBuffer_Init(&txBuf);
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -111,13 +113,19 @@ int main(void)
   {
 	   //printTestMessage();
     /* USER CODE END WHILE */
-		opt = readUserInput();
-		processUserInput(opt);
-		if(opt == 3)
-			goto printMessage;
+
+	    opt = readUserInput();
+	    if(opt > 0)
+	    {
+	      processUserInput(opt);
+	      if(opt == 3)
+	      {
+	        goto printMessage;
+	    }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
+}
 }
 
 /**
@@ -161,25 +169,41 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void printWelcomeMessage(void) {
-	HAL_UART_Transmit(&huart1, (uint8_t*)"\033[0;0H", strlen("\033[0;0H"), HAL_MAX_DELAY);
-	HAL_UART_Transmit(&huart1, (uint8_t*)"\033[2J", strlen("\033[2J"), HAL_MAX_DELAY);
-	HAL_UART_Transmit(&huart1, (uint8_t*)WELCOME_MSG, strlen(WELCOME_MSG), HAL_MAX_DELAY);
-	HAL_UART_Transmit(&huart1, (uint8_t*)MAIN_MENU, strlen(MAIN_MENU), HAL_MAX_DELAY);
+void printWelcomeMessage(void)
+{
+	UART_Transmit(&huart1, (uint8_t*)"\033[0;0H", strlen("\033[0;0H"));
+	UART_Transmit(&huart1, (uint8_t*)"\033[2J", strlen("\033[2J"));
+	UART_Transmit(&huart1, (uint8_t*)WELCOME_MSG, strlen(WELCOME_MSG));
+	UART_Transmit(&huart1, (uint8_t*)MAIN_MENU, strlen(MAIN_MENU));
+	UART_Transmit(&huart1, (uint8_t*)PROMPT, strlen(PROMPT));
 }
 
-void printTestMessage(void) {
-	HAL_UART_Transmit(&huart1, (uint8_t*)"\033[0;0H", strlen("\033[0;0H"), HAL_MAX_DELAY);
-	HAL_UART_Transmit(&huart1, (uint8_t*)"\033[2J", strlen("\033[2J"), HAL_MAX_DELAY);
-	HAL_UART_Transmit(&huart1, (uint8_t*)TEST, strlen(TEST), HAL_MAX_DELAY);
+void printTestMessage(void)
+{
+	UART_Transmit(&huart1, (uint8_t*)"\033[0;0H", strlen("\033[0;0H"));
+	UART_Transmit(&huart1, (uint8_t*)"\033[2J", strlen("\033[2J"));
+	UART_Transmit(&huart1, (uint8_t*)TEST, strlen(TEST));
+}
+
+uint8_t UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t len)
+{
+	if(HAL_UART_Transmit_IT(huart, pData, len) != HAL_OK)
+	{
+		if(RingBuffer_Write(&txBuf, pData, len) != RING_BUFFER_OK)
+			return 0;
+	}
+	return 1;
 }
 
 uint8_t readUserInput(void) {
-	char readBuf[1];
+	int8_t retVal = -1;
 
-	HAL_UART_Transmit(&huart1, (uint8_t*)PROMPT, strlen(PROMPT), HAL_MAX_DELAY);
-	HAL_UART_Receive(&huart1, (uint8_t*)readBuf, 1, HAL_MAX_DELAY);
-	return atoi(readBuf);
+	if(UartReady == SET) {
+	UartReady = RESET;
+	HAL_UART_Receive_IT(&huart1, (uint8_t*)readBuf, 1);
+	retVal = atoi(readBuf);
+	}
+	return retVal;
 }
 
 
@@ -190,16 +214,17 @@ uint8_t processUserInput(uint8_t opt) {
 		return 0;
 
 	sprintf(msg, "%d", opt);
-	HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+	UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg));
 
 	switch(opt) {
 	case 1:
 		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
 		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
+		UART_Transmit(&huart1, (uint8_t*)"\r\n", strlen("\r\n"));
 		break;
 	case 2:
-		sprintf(msg, "\r\nUSER BUTTON status: %s", HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET ? "RELEASED" : "PRESSED");
-		HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+		sprintf(msg, "\r\nUSER BUTTON status: %s\r\n", HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET ? "RELEASED" : "PRESSED");
+		UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg));
 		break;
 	case 3:
 		return 2;
@@ -207,6 +232,21 @@ uint8_t processUserInput(uint8_t opt) {
 
 	return 1;
 }
+ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart1)
+ {
+ /* Set transmission flag: transfer complete*/
+ UartReady = SET;
+ }
+
+ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart1)
+ {
+	 uint8_t txData = txBuf.tail;
+	 if(RingBuffer_GetDataLength(&txBuf) > 0)
+	 	{
+		 RingBuffer_Read(&txBuf, &txData, 1);
+		 HAL_UART_Transmit_IT(huart1, &txData, 1);
+	 	}
+ }
 /* USER CODE END 4 */
 
 /**
