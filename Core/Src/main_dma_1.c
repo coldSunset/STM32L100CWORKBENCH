@@ -85,47 +85,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-//  __IO uint32_t *DMA_CCR4 =0x0;
-//  __IO uint32_t *DMA_CNDTR4 =0x0;
-//  __IO uint32_t *DMA_CPAR4 =0x0;
-//  __IO uint32_t *DMA_CMAR4 =0x0;
-//  DMA_CCR4 = (uint32_t*)(0x400263FF + 0x044);
-//  DMA_CNDTR4 = (uint32_t*)(0x400263FF + 0x048);
-//  DMA_CPAR4 = (uint32_t*)(0x400263FF + 0x04C);
-//  DMA_CMAR4 = (uint32_t*)(0x400263FF + 0x050);
-//  dma_channel_4.CCR = DMA_CCR4;
-//  dma_channel_4.CNDTR = DMA_CNDTR4;
-//  dma_channel_4.CPAR = DMA_CPAR4;
-//  dma_channel_4.CMAR = DMA_CMAR4;
-//
-//  dma1.Direction = DMA_MEMORY_TO_PERIPH;
-//  dma1.PeriphInc = DMA_PINC_DISABLE;
-//  dma1.MemInc = DMA_MINC_ENABLE;
-//  dma1.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-//  dma1.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-//  dma1.Mode = DMA_NORMAL;
-//  dma1.Priority = DMA_PRIORITY_LOW;
-//
-//  hdma_uart1_tx.Instance = &dma_channel_4;
-//  hdma_uart1_tx.Init = dma1;
-//  hdma_uart1_tx.Lock =
-//  HAL_DMA_Init(&hdma_usart2_tx);
-  //-------------------
-  //__IO uint32_t *uart1 =0x0;
- // uart1 = (uint32_t)(0x4001 3800);
-  //dma type def init
-
-  hdma_uart1_tx.Instance = DMA1_Channel4;
-  hdma_uart1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
-  hdma_uart1_tx.Init.PeriphInc = DMA_PINC_DISABLE;
-  hdma_uart1_tx.Init.MemInc = DMA_MINC_ENABLE;
-  hdma_uart1_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-  hdma_uart1_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-  hdma_uart1_tx.Init.Mode = DMA_NORMAL;
-  hdma_uart1_tx.Init.Priority = DMA_PRIORITY_LOW;
-  HAL_DMA_Init(&hdma_usart1_tx);
-
-  HAL_DMA_Start(&hdma_usart1_tx, (uint32_t)msg, (uint32_t)&huart1.Instance->TDR, strlen(msg));
 
   /* USER CODE END Init */
 
@@ -141,7 +100,58 @@ int main(void)
   MX_DMA_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  //  __IO uint32_t *DMA_CCR4 =0x0;
+  //  __IO uint32_t *DMA_CNDTR4 =0x0;
+  //  __IO uint32_t *DMA_CPAR4 =0x0;
+  //  __IO uint32_t *DMA_CMAR4 =0x0;
+  //  DMA_CCR4 = (uint32_t*)(0x400263FF + 0x044);
+  //  DMA_CNDTR4 = (uint32_t*)(0x400263FF + 0x048);
+  //  DMA_CPAR4 = (uint32_t*)(0x400263FF + 0x04C);
+  //  DMA_CMAR4 = (uint32_t*)(0x400263FF + 0x050);
+  //  dma_channel_4.CCR = DMA_CCR4;
+  //  dma_channel_4.CNDTR = DMA_CNDTR4;
+  //  dma_channel_4.CPAR = DMA_CPAR4;
+  //  dma_channel_4.CMAR = DMA_CMAR4;
+  //
+  //  dma1.Direction = DMA_MEMORY_TO_PERIPH;
+  //  dma1.PeriphInc = DMA_PINC_DISABLE;
+  //  dma1.MemInc = DMA_MINC_ENABLE;
+  //  dma1.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+  //  dma1.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+  //  dma1.Mode = DMA_NORMAL;
+  //  dma1.Priority = DMA_PRIORITY_LOW;
+  //
+  //  hdma_uart1_tx.Instance = &dma_channel_4;
+  //  hdma_uart1_tx.Init = dma1;
+  //  hdma_uart1_tx.Lock =
+  //  HAL_DMA_Init(&hdma_usart2_tx);
+    //-------------------
+    //__IO uint32_t *uart1 =0x0;
+   // uart1 = (uint32_t)(0x4001 3800);
+    //dma type def init
 
+    hdma_uart1_tx.Instance = DMA1_Channel4;
+    hdma_uart1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_uart1_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_uart1_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_uart1_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_uart1_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_uart1_tx.Init.Mode = DMA_NORMAL;
+    hdma_uart1_tx.Init.Priority = DMA_PRIORITY_LOW;
+
+    HAL_DMA_Init(&hdma_uart1_tx);
+
+    __HAL_LINKDMA(&huart1, hdmatx, hdma_uart1_tx);
+    HAL_DMA_Start(&hdma_uart1_tx, (uint32_t)msg, (uint32_t)&huart1.Instance->DR, strlen(msg));
+
+    //Enable UART in DMA mode
+    huart1.Instance->CR3 |= USART_CR3_DMAT;
+    //Wait for transfer complete
+    HAL_DMA_PollForTransfer(&hdma_uart1_tx, HAL_DMA_FULL_TRANSFER, HAL_MAX_DELAY);
+    //Disable UART DMA mode
+    huart1.Instance->CR3 &= ~USART_CR3_DMAT;
+    //Turn LD2 ON
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
 
   /* USER CODE END 2 */
 
