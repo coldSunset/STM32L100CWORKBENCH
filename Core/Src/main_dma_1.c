@@ -20,9 +20,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "dma.h"
 #include "usart.h"
 #include "gpio.h"
+#include "dma.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -30,19 +30,19 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#define WELCOME_MSG "Welcome to the STMDISCO management console\r\n"
-#define MAIN_MENU   "Select the option you are interested in:\r\n\t1. Toggle LD3 and LD4 LED\r\n\t2. Read USER BUTTON status\r\n\t3. Clear screen and print this message "
-#define PROMPT "\r\n> "
-#define TEST "Hello"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+DMA_HandleTypeDef hdma_uart1_tx;
+DMA_Channel_TypeDef dma_channel_4;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+extern UART_HandleTypeDef huart1;
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,20 +53,14 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-__IO ITStatus UartReady = SET;
-char readBuf[1];
-RingBuffer txBuf;
+char *msg = "Hello STM32 Lovers! This message is transferred in DMA Mode.\r\n";
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-void SystemClock_Config(void);
-void printWelcomeMessage(void);
-uint8_t processUserInput(uint8_t opt);
-uint8_t readUserInput(void);
-void printTestMessage(void);
-uint8_t UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t len);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -81,7 +75,7 @@ uint8_t UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t len);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	uint8_t opt = 0;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -90,7 +84,12 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  RingBuffer_Init(&txBuf);
+  __IO uint32_t *CCR4 =0x0;
+  CCR4 = (uint32_t*)(0x400263FF + 0x044);
+
+  //dma type def init
+  dma_channel_4.CCR = CCR4;
+  hdma_uart1_tx.Instance = CCR4;
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -105,20 +104,20 @@ int main(void)
   MX_DMA_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  printMessage:
-  	  printWelcomeMessage();
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	   //printTestMessage();
-    /* USER CODE END WHILE */
 
+    /* USER CODE END WHILE */
     /* USER CODE BEGIN 3 */
-  }
+
   /* USER CODE END 3 */
+}
 }
 
 /**
@@ -162,94 +161,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void printWelcomeMessage(void)
-{
-	UART_Transmit(&huart1, (uint8_t*)"\033[0;0H", strlen("\033[0;0H"));
-	UART_Transmit(&huart1, (uint8_t*)"\033[2J", strlen("\033[2J"));
-	UART_Transmit(&huart1, (uint8_t*)WELCOME_MSG, strlen(WELCOME_MSG));
-	UART_Transmit(&huart1, (uint8_t*)MAIN_MENU, strlen(MAIN_MENU));
-	UART_Transmit(&huart1, (uint8_t*)PROMPT, strlen(PROMPT));
-}
 
-void printTestMessage(void)
-{
-	UART_Transmit(&huart1, (uint8_t*)"\033[0;0H", strlen("\033[0;0H"));
-	UART_Transmit(&huart1, (uint8_t*)"\033[2J", strlen("\033[2J"));
-	UART_Transmit(&huart1, (uint8_t*)TEST, strlen(TEST));
-}
-
-uint8_t UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t len)
-{
-	if(HAL_UART_Transmit_IT(huart, pData, len) != HAL_OK)
-	{
-		if(RingBuffer_Write(&txBuf, pData, len) != RING_BUFFER_OK)
-			return 0;
-	}
-	return 1;
-}
-
-uint8_t readUserInput(void) {
-	int8_t retVal = -1;
-
-	if(UartReady == SET) {
-	UartReady = RESET;
-	HAL_UART_Receive_IT(&huart1, (uint8_t*)readBuf, 1);
-	retVal = atoi(readBuf);
-	}
-	return retVal;
-}
-
-
-uint8_t processUserInput(uint8_t opt) {
-	char msg[30];
-
-	if(!opt || opt > 3)
-		return 0;
-
-	sprintf(msg, "%d", opt);
-	UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg));
-
-	switch(opt) {
-	case 1:
-		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
-		UART_Transmit(&huart1, (uint8_t*)"\r\n", strlen("\r\n"));
-		sprintf(msg, "LEDs ARE %s\r\n", HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_9) == GPIO_PIN_RESET ? "OFF" : "ON");
-		UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg));
-		break;
-	case 2:
-		sprintf(msg, "\r\nUSER BUTTON status: %s\r\n", HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET ? "RELEASED" : "PRESSED");
-		UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg));
-		break;
-	case 3:
-		return 2;
-	};
-
-	return 1;
-}
- void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart1)
- {
- /* Set transmission flag: transfer complete*/
- UartReady = SET;
- }
-
- void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart1)
- {
-	 uint8_t txData = txBuf.tail;
-	 if(RingBuffer_GetDataLength(&txBuf) > 0)
-	 	{
-		 RingBuffer_Read(&txBuf, &txData, 1);
-		 HAL_UART_Transmit_IT(huart1, &txData, 1);
-	 	}
- }
-
- void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
- {
-	 if(huart->ErrorCode == HAL_UART_ERROR_ORE)
-		 {
-		 	 HAL_UART_Receive_IT(&huart1, readBuf, 1);
-		 }
- }
 /* USER CODE END 4 */
 
 /**
