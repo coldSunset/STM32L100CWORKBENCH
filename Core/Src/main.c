@@ -221,6 +221,8 @@ uint8_t processUserInput(uint8_t opt) {
 		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
 		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
 		UART_Transmit(&huart1, (uint8_t*)"\r\n", strlen("\r\n"));
+		sprintf(msg, "LEDs ARE %s\r\n", HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_9) == GPIO_PIN_RESET ? "OFF" : "ON");
+		UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg));
 		break;
 	case 2:
 		sprintf(msg, "\r\nUSER BUTTON status: %s\r\n", HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET ? "RELEASED" : "PRESSED");
@@ -246,6 +248,14 @@ uint8_t processUserInput(uint8_t opt) {
 		 RingBuffer_Read(&txBuf, &txData, 1);
 		 HAL_UART_Transmit_IT(huart1, &txData, 1);
 	 	}
+ }
+
+ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+ {
+	 if(huart->ErrorCode == HAL_UART_ERROR_ORE)
+		 {
+		 	 HAL_UART_Receive_IT(&huart1, readBuf, 1);
+		 }
  }
 /* USER CODE END 4 */
 
