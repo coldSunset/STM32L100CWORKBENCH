@@ -54,14 +54,14 @@ extern UART_HandleTypeDef huart1;
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-char *msg = "Hello STM32 Lovers! This message is transferred in DMA Mode.\r\n";
+char *msg = "\033[2J Hello STM32 Lovers! This message is transferred in DMA Mode.\r\n";
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void DMATransferComplete(DMA_HandleTypeDef *hdma);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -100,6 +100,7 @@ int main(void)
   MX_DMA_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  HAL_UART_Transmit(&huart1, (uint8_t*)"\033[2J", strlen("\033[2J"), HAL_MAX_DELAY);
 
     hdma_uart1_tx.Instance = DMA1_Channel4;
     hdma_uart1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
@@ -109,11 +110,12 @@ int main(void)
     hdma_uart1_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
     hdma_uart1_tx.Init.Mode = DMA_NORMAL;
     hdma_uart1_tx.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_uart1_tx.XferCpltCallback = &DMATransferComplete;
     HAL_DMA_Init(&hdma_uart1_tx);
 
-    // DMA interrupt init
-    HAL_NVIC_SetPriority(DMA2_Channel4_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(DMA2_Channel4_IRQn);
+    // DMA interrupt init //problem here
+    HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
     // (1)setup addresses on memory and peripheral ports
     // (2)specify amount of data to be sent
     // (3)arm the DMA
