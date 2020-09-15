@@ -109,17 +109,23 @@ int main(void)
     hdma_uart1_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
     hdma_uart1_tx.Init.Mode = DMA_NORMAL;
     hdma_uart1_tx.Init.Priority = DMA_PRIORITY_LOW;
+
     HAL_DMA_Init(&hdma_uart1_tx);
 
-    // DMA interrupt init
-    HAL_NVIC_SetPriority(DMA2_Channel4_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(DMA2_Channel4_IRQn);
+    //__HAL_LINKDMA(&huart1, hdmatx, hdma_uart1_tx);
     // (1)setup addresses on memory and peripheral ports
     // (2)specify amount of data to be sent
     // (3)arm the DMA
-    HAL_DMA_Start_IT(&hdma_uart1_tx, (uint32_t)msg, (uint32_t)&huart1.Instance->DR, strlen(msg));
+    HAL_DMA_Start(&hdma_uart1_tx, (uint32_t)msg, (uint32_t)&huart1.Instance->DR, strlen(msg));
+
     //(4)Enable UART in DMA mode
     huart1.Instance->CR3 |= USART_CR3_DMAT;
+    //Wait for transfer complete
+    HAL_DMA_PollForTransfer(&hdma_uart1_tx, HAL_DMA_FULL_TRANSFER, HAL_MAX_DELAY);
+    //Disable UART DMA mode
+    huart1.Instance->CR3 &= ~USART_CR3_DMAT;
+    //Turn LD2 ON
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
 
   /* USER CODE END 2 */
 
@@ -176,16 +182,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void DMATransferComplete(DMA_HandleTypeDef *hdma)
-{
-	if(hdma->Instance ==DMA1_Channel4)
-	{
-		//Disable UART DMA mode
-		huart1.Instance->CR3 &= ~USART_CR3_DMAT;
-		//Turn LD2 ON
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-	}
-}
+
 /* USER CODE END 4 */
 
 /**
