@@ -101,7 +101,6 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   HAL_UART_Transmit(&huart1, (uint8_t*)"\033[2J", strlen("\033[2J"), HAL_MAX_DELAY);
-
     hdma_uart1_tx.Instance = DMA1_Channel4;
     hdma_uart1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
     hdma_uart1_tx.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -112,14 +111,17 @@ int main(void)
     hdma_uart1_tx.Init.Priority = DMA_PRIORITY_LOW;
     hdma_uart1_tx.XferCpltCallback = &DMATransferComplete;
     HAL_DMA_Init(&hdma_uart1_tx);
+    __HAL_LINKDMA(&huart1, hdmatx, hdma_uart1_tx);
 
     // DMA interrupt init //problem here
-    HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+   // HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 0);
+    //HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
     // (1)setup addresses on memory and peripheral ports
     // (2)specify amount of data to be sent
     // (3)arm the DMA
-    HAL_DMA_Start_IT(&hdma_uart1_tx, (uint32_t)msg, (uint32_t)&huart1.Instance->DR, strlen(msg));
+
+    //HAL_DMA_Start_IT(&hdma_uart1_tx, (uint32_t)msg, (uint32_t)&huart1.Instance->DR, strlen(msg));
+    HAL_DMA_Start(&hdma_uart1_tx, (uint32_t)msg, (uint32_t)&huart1.Instance->DR, strlen(msg));
     //(4)Enable UART in DMA mode
     huart1.Instance->CR3 |= USART_CR3_DMAT;
 
