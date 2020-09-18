@@ -1,4 +1,0 @@
-main_3.c:74:5:main	8	static
-main_3.c:137:6:SystemClock_Config	80	static
-main_3.c:175:6:printTestMessage	8	static
-main_3.c:186:6:Error_Handler	4	static

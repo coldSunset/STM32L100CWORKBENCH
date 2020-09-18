@@ -1,5 +1,5 @@
-Core/Src/main_3.o: ../Core/Src/main_3.c ../Core/Inc/main.h \
- ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal.h \
+Core/Src/main_gpio test.o: ../Core/Src/main_gpio\ test.c \
+ ../Core/Inc/main.h ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal.h \
  ../Core/Inc/stm32l1xx_hal_conf.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rcc.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_def.h \

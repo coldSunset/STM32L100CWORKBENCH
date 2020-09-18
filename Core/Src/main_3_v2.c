@@ -31,22 +31,56 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void SystemClock_Config(void);
+#define TEST "Hello"
+/* USER CODE END Includes */
 
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+extern DMA_HandleTypeDef hdma_usart2_rx;
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+extern UART_HandleTypeDef huart2;
+
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+
+/* USER CODE BEGIN PV */
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+/* USER CODE BEGIN PFP */
+void printTestMessage(void);
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+
+/* USER CODE END 0 */
+
+/**
+  * @brief  The application entry point.
+  * @retval int
+  */
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	 __HAL_RCC_GPIOC_CLK_ENABLE();
-	// RCC -> AHBENR |= 1 << 2 ;
-	 GPIOC -> MODER |= (1<<8*2)|(1<<9*2);
-	 GPIOC -> ODR = (1<<8|1<<9);
-	//*GPIOC_MODER |= 0x05 << 16 ; // set I/O dir for PC8 and PC9
-	//*GPIOC_ODR   |= 0x03 << 8  ;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -55,9 +89,35 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_USART2_UART_Init();
+  /* USER CODE BEGIN 2 */
+
+
+   // __HAL_LINKDMA(huart1,hdmatx,hdma_uart1_rx);
+    // (1)setup addresses on memory and peripheral ports
+    // (2)specify amount of data to be sent
+    // (3)arm the DMA
+  HAL_DMA_Start(&hdma_usart2_rx, (uint32_t)&huart2.Instance->DR, (uint32_t)&GPIOC->ODR, 8);
+    //(4)Enable UART in DMA mode
+    huart2.Instance->CR3 |= USART_CR3_DMAR;
+
+  //test uart
+
+   /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+	// GPIOC -> MODER |= (1<<8*2)|(1<<9*2);
+
   while (1)
   {
-
 
     /* USER CODE END WHILE */
     /* USER CODE BEGIN 3 */
@@ -75,10 +135,10 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Configure the main internal regulator output voltage 
+  /** Configure the main internal regulator output voltage
   */
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -91,7 +151,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -108,7 +168,11 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
-
+void printTestMessage(void) {
+	HAL_UART_Transmit(&huart2, (uint8_t*)"\033[0;0H", strlen("\033[0;0H"), HAL_MAX_DELAY);
+	HAL_UART_Transmit(&huart2, (uint8_t*)"\033[2J", strlen("\033[2J"), HAL_MAX_DELAY);
+	HAL_UART_Transmit(&huart2, (uint8_t*)TEST, strlen(TEST), HAL_MAX_DELAY);
+}
 /* USER CODE END 4 */
 
 /**
@@ -132,7 +196,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

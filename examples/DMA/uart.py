@@ -3,7 +3,7 @@ import time, serial
 
 SERIAL_PORT = "COM8"
 
-ser = serial.Serial(SERIAL_PORT, 9600)
+ser = serial.Serial(SERIAL_PORT, 38400)
 
 while True: 
 	ser.write((0xff,))
