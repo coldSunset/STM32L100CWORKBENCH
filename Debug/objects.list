@@ -1,6 +1,6 @@
 "Core/Src/dma.o"
 "Core/Src/gpio.o"
-"Core/Src/main_3_uart_dma.o"
+"Core/Src/main_4_m2m.o"
 "Core/Src/ringbuffer.o"
 "Core/Src/stm32l1xx_hal_msp.o"
 "Core/Src/stm32l1xx_it.o"

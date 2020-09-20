@@ -1,5 +1,0 @@
-main_3_uart_dma.c:74:5:main	16	static
-main_3_uart_dma.c:128:6:SystemClock_Config	80	static
-main_3_uart_dma.c:166:6:printTestMessage	8	static
-main_3_uart_dma.c:172:6:HAL_UART_RxCpltCallback	16	static
-main_3_uart_dma.c:183:6:Error_Handler	4	static
