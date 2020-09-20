@@ -53,7 +53,7 @@ extern UART_HandleTypeDef huart2;
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint8_t dataArrived = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -99,24 +99,16 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  uint8_t data[3];
+  HAL_UART_Receive_DMA(&huart2, &data, 3);
 
-   // __HAL_LINKDMA(huart1,hdmatx,hdma_uart1_rx);
-    // (1)setup addresses on memory and peripheral ports
-    // (2)specify amount of data to be sent
-    // (3)arm the DMA
-  //HAL_DMA_Start(&hdma_usart2_rx, (uint32_t)&huart2.Instance->DR, (uint32_t)&GPIOC->ODR, 1);
-    //(4)Enable UART in DMA mode
-  //  huart2.Instance->CR3 |= USART_CR3_DMAR;
-
-  //test uart
-
+  while(!dataArrived);
    /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	// GPIOC -> MODER |= (1<<8*2)|(1<<9*2);
-	// GPIOC -> ODR |= (1<<8|1<<9);
-char readBuf[0];
+
+
   while (1)
   {
 
@@ -124,8 +116,7 @@ char readBuf[0];
     /* USER CODE BEGIN 3 */
 
 
-	  HAL_UART_Receive(&huart2, (uint8_t*)readBuf, 1, HAL_MAX_DELAY);
-		  GPIOC -> ODR |= 255;
+
   /* USER CODE END 3 */
 }
 }
@@ -177,6 +168,12 @@ void printTestMessage(void) {
 	HAL_UART_Transmit(&huart2, (uint8_t*)"\033[2J", strlen("\033[2J"), HAL_MAX_DELAY);
 	HAL_UART_Transmit(&huart2, (uint8_t*)TEST, strlen(TEST), HAL_MAX_DELAY);
 }
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	dataArrived = 1;
+}
+
 /* USER CODE END 4 */
 
 /**

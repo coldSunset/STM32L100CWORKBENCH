@@ -3,13 +3,14 @@ import time, serial
 
 SERIAL_PORT = "COM8"
 
-ser = serial.Serial(SERIAL_PORT, 38400)
+ser = serial.Serial(SERIAL_PORT, 9600)
 
 while True: 
-	ser.write((0xff,))
+	ser.write((0x41,))
 	time.sleep(0.5)
-	ser.write((0,))
+	ser.write((0x42,))
 	time.sleep(0.5)
-
-
+	ser.write((0x43,))
+	time.sleep(0.5)
+	
 ser.close() 
