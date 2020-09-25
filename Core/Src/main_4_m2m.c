@@ -141,7 +141,9 @@ int main(void)
 
    GPIOC->ODR |= (1 << 8);
    for(int i = 0; i < 1000; i++)
+   {
      sramData[i] = flashData[i];
+   }
    GPIOC->ODR &= (0 << 8);
    GPIOC-> ODR |= (1 << 9);
    /* USER CODE END 2 */
